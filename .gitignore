@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+*.Rproj
+*_cache/
+*_files/
+graphics/
+Bayesian_data_analysis_using_Stan.Rmd
+theme_options.tex
