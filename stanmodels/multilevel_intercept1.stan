@@ -2,11 +2,11 @@ data {
   int<lower=1> N;  // total number of observations 
   vector[N] y;  // response variable 
   vector[N] x;  // predictor variable
-  int<lower=1> Nside;  // number of sides
-  int<lower=1> side[N];  // side index
+  int<lower=1> Nlocation;  // number of locations
+  int<lower=1> location[N];  // location index
 } 
 parameters {
-  vector[Nside] alpha;  // intercepts
+  vector[Nlocation] alpha;  // intercepts
   real mu_alpha;  // intercept mean
   real<lower=0> tau_alpha;  // intercept SD
   real beta;  // slope
@@ -15,7 +15,7 @@ parameters {
 model { 
   vector[N] mu;
   for (n in 1:N) {
-    mu[n] = alpha[side[n]] + beta * x[n];
+    mu[n] = alpha[location[n]] + beta * x[n];
   }
   // likelihood
   y ~ normal(mu, sigma);
@@ -30,7 +30,7 @@ generated quantities {
   vector[N] yrep;  // posterior predictions
   vector[N] ll;  // log-likelihood values
   for (n in 1:N) {
-    yrep[n] = normal_rng(alpha[side[n]] + beta * x[n], sigma);
-    ll[n] = normal_lpdf(y[n] | alpha[side[n]] + beta * x[n], sigma);
+    yrep[n] = normal_rng(alpha[location[n]] + beta * x[n], sigma);
+    ll[n] = normal_lpdf(y[n] | alpha[location[n]] + beta * x[n], sigma);
   }
 }

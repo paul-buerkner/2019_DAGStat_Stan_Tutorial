@@ -2,8 +2,8 @@ data {
   int<lower=1> N;  // total number of observations 
   vector[N] y;  // response variable 
   vector[N] x;  // predictor variable
-  int<lower=1> Nside;  // number of sides
-  int<lower=1> side[N];  // side index
+  int<lower=1> Nlocation;  // number of locations
+  int<lower=1> location[N];  // location index
 } 
 parameters {
   real mu_alpha;  // intercept mean
@@ -12,21 +12,21 @@ parameters {
   real<lower=0> tau_beta;  // slope SD
   // cholesky factor of the correlation matrix
   cholesky_factor_corr[2] L_Cor;
-  matrix[2, Nside] z_theta;  // dummy varying effects
+  matrix[2, Nlocation] z_theta;  // dummy varying effects
   real<lower=0> sigma;  // residual SD
 } 
 transformed parameters {
   // cholesky factor of the covariance matrix
   matrix[2, 2] L_Sigma = diag_pre_multiply([tau_alpha, tau_beta]', L_Cor);
-  matrix[2, Nside] theta;  // actual varying effects
-  for (j in 1:Nside) {
+  matrix[2, Nlocation] theta;  // actual varying effects
+  for (j in 1:Nlocation) {
     theta[, j] = [mu_alpha, mu_beta]' + L_Sigma * z_theta[, j];
   }
 }
 model { 
   vector[N] mu;
   for (n in 1:N) {
-    mu[n] = theta[1, side[n]] + theta[2, side[n]] * x[n];
+    mu[n] = theta[1, location[n]] + theta[2, location[n]] * x[n];
   }
   // likelihood
   y ~ normal(mu, sigma);
@@ -44,7 +44,7 @@ generated quantities {
   vector[N] yrep;  // posterior predictions
   vector[N] ll;  // log-likelihood values
   for (n in 1:N) {
-    real mu = theta[1, side[n]] + theta[2, side[n]] * x[n];
+    real mu = theta[1, location[n]] + theta[2, location[n]] * x[n];
     yrep[n] = normal_rng(mu, sigma);
     ll[n] = normal_lpdf(y[n] | mu, sigma);
   }
